@@ -47,6 +47,11 @@ instance Ord Game where
 (||) :: Game -> Game -> Bool
 g || h = fuzzyZero (g - h)
 
+identical :: Game -> Game -> Bool
+identical a b = inside a b && inside b a
+  where inside a b =  all (\g -> any (identical g) (leftMoves b)) (leftMoves a)
+                   && all (\g -> any (identical g) (rightMoves b)) (rightMoves a)
+
 unbeaten :: (a -> a -> Bool) -> [a] -> [a]
 unbeaten _ [] = []
 unbeaten p (x:xs) = if any (p x) rest then
