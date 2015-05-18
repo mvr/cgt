@@ -24,8 +24,6 @@ instance Num Game where
   abs _ = undefined
   signum _ = undefined
 
-
-
 gteqZero, lteqZero :: Game -> Bool
 gteqZero = not . any lteqZero . rightMoves
 lteqZero = not . any gteqZero . leftMoves
@@ -82,12 +80,12 @@ simplifyTop = removeDominated . until (not . anyReversible) (bypassReversible . 
 simplify :: Game -> Game
 simplify g = simplifyTop $ Game (map simplify (leftMoves g)) (map simplify (rightMoves g))
 
-data NumberUpStar = NUS { numberPart :: Rational, upPart :: Int, nimberPart :: Int } deriving (Eq, Ord)
+data NumberUpStar = NUS { numberPart :: Rational, upPart :: Integer, nimberPart :: Integer } deriving (Eq, Ord)
 
 nusIsNumber :: NumberUpStar -> Bool
 nusIsNumber nus = upPart nus == 0 && nimberPart nus == 0
 
-nimPlus :: Int -> Int -> Int
+nimPlus :: Integer -> Integer -> Integer
 nimPlus a b = a `xor` b
 
 optionsToNUS :: ([NumberUpStar], [NumberUpStar]) -> Maybe NumberUpStar
@@ -123,7 +121,7 @@ optionsToNUS ([l], [r1, r2]) | nusIsNumber l && nusIsNumber r1
                                  = Just $ NUS (numberPart r1) (-1) 1
 -- Last possibility to check, we are looking at G = n + ∗k
 optionsToNUS (l1:ls, r1:rs) | length ls == length rs && nusIsNumber l1
-                              && l1 == r1 && nimberOptions = Just $ NUS (numberPart l1) 0 (length ls + 1)
+                              && l1 == r1 && nimberOptions = Just $ NUS (numberPart l1) 0 (fromIntegral $ length ls + 1)
   where nimberOptions = all valid (zip3 ls rs [1..])
         valid (l, r, i) = l == r && numberPart l == numberPart l1
                           && upPart l == 0 && nimberPart l == i
@@ -147,8 +145,8 @@ instance Show NumberUpStar where
                        | otherwise = "(" ++ show (numerator n) ++ "/" ++ show (denominator n) ++ ")"
 
           upShow n     | n == 0 = ""
-                       | n > 0 = replicate n '↑'
-                       | n < 0 = replicate (-n) '↓'
+                       | n > 0 = replicate (fromIntegral n) '↑'
+                       | n < 0 = replicate (fromIntegral (-n)) '↓'
 
           starShow n   | n == 0 = ""
                        | n == 1 = "∗"
