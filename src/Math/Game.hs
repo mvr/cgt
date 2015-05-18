@@ -1,4 +1,11 @@
-module Math.Game where
+module Math.Game
+       (
+         Game (..),
+         identical,
+         simplify,
+         (||),
+       )
+  where
 
 import Prelude hiding ((||))
 import qualified Prelude ((||))
