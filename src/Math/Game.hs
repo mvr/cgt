@@ -10,9 +10,10 @@ module Math.Game
 import Prelude hiding ((||))
 import qualified Prelude ((||))
 import Control.Monad ((>=>))
-import Data.Bits
 import Data.List
 import Data.Ratio
+
+import Math.Game.Nimber
 
 data Game = Game { leftMoves :: [Game], rightMoves :: [Game] }
 
@@ -92,13 +93,10 @@ simplifyTop = removeDominated . until (not . anyReversible) (bypassReversible . 
 simplify :: Game -> Game
 simplify g = simplifyTop $ Game (map simplify (leftMoves g)) (map simplify (rightMoves g))
 
-data NumberUpStar = NUS { numberPart :: Rational, upPart :: Integer, nimberPart :: Integer } deriving (Eq, Ord)
+data NumberUpStar = NUS { numberPart :: Rational, upPart :: Integer, nimberPart :: Nimber } deriving (Eq, Ord)
 
 nusIsNumber :: NumberUpStar -> Bool
 nusIsNumber nus = upPart nus == 0 && nimberPart nus == 0
-
-nimPlus :: Integer -> Integer -> Integer
-nimPlus a b = a `xor` b
 
 optionsToNUS :: ([NumberUpStar], [NumberUpStar]) -> Maybe NumberUpStar
 -- Zero game
@@ -117,12 +115,12 @@ optionsToNUS ([l], [r]) | nusIsNumber l && nusIsNumber r
 optionsToNUS ([l], [r]) | nusIsNumber l && not (nusIsNumber r)
                           && numberPart l == numberPart r
                           && upPart r >= 0
-                            = Just $ NUS (numberPart l) (upPart r + 1) (nimberPart r `nimPlus` 1)
+                            = Just $ NUS (numberPart l) (upPart r + 1) (nimberPart r + 1)
 -- Now n + { G | 0 }, where G has non-positive ups
 optionsToNUS ([l], [r]) | not (nusIsNumber l) && nusIsNumber r
                           && numberPart l == numberPart r
                           && upPart l <= 0
-                            = Just $ NUS (numberPart r) (upPart l - 1) (nimberPart l `nimPlus` 1)
+                            = Just $ NUS (numberPart r) (upPart l - 1) (nimberPart l + 1)
 -- If G = { n, n∗ | n }, G = n↑∗
 optionsToNUS ([l1, l2], [r]) | nusIsNumber l1 && nusIsNumber r
                                && l1 == r && l2 == NUS (numberPart l1) 0 1
