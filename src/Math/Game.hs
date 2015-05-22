@@ -1,6 +1,7 @@
 module Math.Game
        (
          Game (..),
+         star, up, down,
          identical,
          simplify,
          (||),
@@ -16,6 +17,11 @@ import Data.Ratio
 import Math.Game.Nimber
 
 data Game = Game { leftMoves :: [Game], rightMoves :: [Game] }
+
+star, up, down :: Game
+star = Game [0] [0]
+up = Game [0] [star]
+down = Game [star] [0]
 
 instance Num Game where
   g + h = Game left right
