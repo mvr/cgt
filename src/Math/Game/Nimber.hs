@@ -72,4 +72,6 @@ instance Fractional Nimber where
   fromRational = error "Nimber: fromRational"
 
 instance Show Nimber where
-  showsPrec d (Nimber a) = showParen (d > 7) $ showChar '*' . showsPrec 8 a
+  showsPrec d (Nimber 0) = showParen (d > 7) $ showChar '0'
+  showsPrec d (Nimber 1) = showParen (d > 7) $ showChar '∗'
+  showsPrec d (Nimber a) = showParen (d > 7) $ showChar '∗' . showsPrec 8 a

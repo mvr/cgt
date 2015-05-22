@@ -165,8 +165,7 @@ instance Show NumberUpStar where
                        | n < 0 = replicate (fromIntegral (-n)) '↓'
 
           starShow n   | n == 0 = ""
-                       | n == 1 = "∗"
-                       | otherwise = "∗" ++ show n
+                       | otherwise = show n
 
 instance Show Game where
   show g = string (simplifiedToNUS s)
