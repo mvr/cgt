@@ -1,42 +1,75 @@
 module Math.Game
        (
-         Game (..),
+         Game, game, leftMoves, rightMoves,
          star, up, down,
-         identical,
-         simplify,
          (||),
        )
   where
 
 import Prelude hiding ((||))
-import qualified Prelude ((||))
 import Control.Monad ((>=>))
 import Data.List
 import Data.Ratio
 
 import Math.Game.Nimber
 
-data Game = Game { leftMoves :: [Game], rightMoves :: [Game] }
+data Game = Game [Game] [Game]
+          | NUSGame NumberUpStar
+
+game :: [Game] -> [Game] -> Game
+game l r = let g = simplify (Game l r) in
+           case simplifiedToNUS g of
+             Just nus -> NUSGame nus
+             Nothing  -> g
+
+leftMoves :: Game -> [Game]
+leftMoves (Game l _) = l
+leftMoves (NUSGame (NUS 0 0 0)) = []
+leftMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i > 0 = [fromInteger $ numerator i - 1]
+leftMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i < 0 = []
+leftMoves (NUSGame (NUS r 0 0)) = [fromRational $ (numerator r - 1) % denominator r]
+leftMoves (NUSGame (NUS r 1 1)) = [NUSGame (NUS r 0 0), NUSGame (NUS r 0 1)]
+leftMoves (NUSGame (NUS r (-1) 1)) = [NUSGame (NUS r 0 0)]
+leftMoves (NUSGame (NUS r 0 k)) = map (NUSGame . NUS r 0) [0..k-1]
+leftMoves (NUSGame (NUS n u s)) | u > 0 = [NUSGame (NUS n 0 0)]
+leftMoves (NUSGame (NUS n u s)) | u < 0 = [NUSGame (NUS n (u+1) (s+1))]
+
+rightMoves :: Game -> [Game]
+rightMoves (Game _ r) = r
+rightMoves (NUSGame (NUS 0 0 0)) = []
+rightMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i > 0 = []
+rightMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i < 0 = [fromInteger $ numerator i + 1]
+rightMoves (NUSGame (NUS r 0 0)) = [fromRational $ (numerator r + 1) % denominator r]
+rightMoves (NUSGame (NUS r 1 1)) = [NUSGame (NUS r 0 0)]
+rightMoves (NUSGame (NUS r (-1) 1)) = [NUSGame (NUS r 0 0), NUSGame (NUS r 0 1)]
+rightMoves (NUSGame (NUS r 0 k)) = map (NUSGame . NUS r 0) [0..k-1]
+rightMoves (NUSGame (NUS n u s)) | u > 0 = [NUSGame (NUS n (u-1) (s-1))]
+rightMoves (NUSGame (NUS n u s)) | u < 0  = [NUSGame (NUS n 0 0)]
 
 star, up, down :: Game
-star = Game [0] [0]
-up = Game [0] [star]
-down = Game [star] [0]
+star = NUSGame (NUS 0   0  1)
+up   = NUSGame (NUS 0   1  0)
+down = NUSGame (NUS 0 (-1) 0)
 
 instance Num Game where
-  g + h = Game left right
+  NUSGame g + NUSGame h = NUSGame $ g + h
+  g + h | isNumber g = Game (map (g +) (leftMoves h)) (map (g +) (rightMoves h))
+  g + h | isNumber h = Game (map (h +) (leftMoves g)) (map (h +) (rightMoves g))
+  g + h = game left right
     where left  = map (+ h) (leftMoves g)  ++ map (g +) (leftMoves h)
           right = map (+ h) (rightMoves g) ++ map (g +) (rightMoves h)
 
-  negate g = Game (map negate $ rightMoves g) (map negate $ leftMoves g)
+  negate (Game l r) = Game (map negate r) (map negate l)
+  negate (NUSGame nus) = NUSGame $ negate nus
 
-  fromInteger i | i == 0 = Game [] []
-                | i > 0  = Game [fromInteger (i-1)] []
-                | i < 0  = negate $ fromInteger (-i)
+  fromInteger = NUSGame . fromInteger
 
   _ * _ = undefined -- This is possible to define for some games
   abs _ = undefined
   signum _ = undefined
+
+instance Fractional Game where
+  fromRational r = NUSGame (NUS r 0 0)
 
 gteqZero, lteqZero :: Game -> Bool
 gteqZero = not . any lteqZero . rightMoves
@@ -50,21 +83,24 @@ ltZero g = not (gteqZero g) && lteqZero g
 fuzzyZero g = not (gteqZero g) && not (lteqZero g)
 
 instance Eq Game where
+  NUSGame g == NUSGame h = g == h
   g == h = eqZero (g - h)
 
 instance Ord Game where
+  NUSGame g < NUSGame h = g < h
   g < h = ltZero (g - h)
+
+  NUSGame g > NUSGame h = g > h
   g > h = gtZero (g - h)
+
+  NUSGame g <= NUSGame h = g <= h
   g <= h = lteqZero (g - h)
+
+  NUSGame g >= NUSGame h = g >= h
   g >= h = gteqZero (g - h)
 
 (||) :: Game -> Game -> Bool
 g || h = fuzzyZero (g - h)
-
-identical :: Game -> Game -> Bool
-identical a b = inside a b && inside b a
-  where inside a b =  all (\g -> any (identical g) (leftMoves b)) (leftMoves a)
-                   && all (\g -> any (identical g) (rightMoves b)) (rightMoves a)
 
 unbeaten :: (a -> a -> Bool) -> [a] -> [a]
 unbeaten _ [] = []
@@ -85,24 +121,40 @@ lReversible g gl = maybe [gl] leftMoves (find (<= g) (rightMoves gl))
 rReversible :: Game -> Game -> [Game]
 rReversible g gr = maybe [gr] rightMoves (find (>= g) (leftMoves gr))
 
-anyReversible :: Game -> Bool
-anyReversible g = any (<= g) (concatMap rightMoves (leftMoves g)) Prelude.|| any (>= g) (concatMap leftMoves (rightMoves g))
-
 bypassReversible :: Game -> Game
 bypassReversible g = Game left right
   where left  = concatMap (lReversible g) (leftMoves g)
         right = concatMap (rReversible g) (rightMoves g)
 
-simplifyTop :: Game -> Game
-simplifyTop = removeDominated . until (not . anyReversible) (bypassReversible . removeDominated)
-
 simplify :: Game -> Game
-simplify g = simplifyTop $ Game (map simplify (leftMoves g)) (map simplify (rightMoves g))
+simplify = removeDominated . bypassReversible
 
-data NumberUpStar = NUS { numberPart :: Rational, upPart :: Integer, nimberPart :: Nimber } deriving (Eq, Ord)
+data NumberUpStar = NUS { numberPart :: Rational, upPart :: Integer, nimberPart :: Nimber } deriving (Eq)
+
+instance Num NumberUpStar where
+  (NUS n u s) + (NUS n' u' s') = NUS (n + n') (u + u') (s + s')
+  negate (NUS n u s) = NUS (-n) (-u) s
+
+  fromInteger i = NUS (fromInteger i) 0 0
+
+  _ * _ = undefined
+  abs _ = undefined
+  signum _ = undefined
+
+instance Ord NumberUpStar where
+  g <= h | g == h                      = True
+         | numberPart g < numberPart h = True
+         | numberPart g > numberPart h = False
+         | upPart g     < upPart h - 1 = True
+         | upPart g    == upPart h - 1 = nimberPart g + nimberPart h /= 1
+         | otherwise                   = False
 
 nusIsNumber :: NumberUpStar -> Bool
 nusIsNumber nus = upPart nus == 0 && nimberPart nus == 0
+
+isNumber :: Game -> Bool
+isNumber (Game _ _) = False
+isNumber (NUSGame nus) = nusIsNumber nus
 
 optionsToNUS :: ([NumberUpStar], [NumberUpStar]) -> Maybe NumberUpStar
 -- Zero game
@@ -149,7 +201,7 @@ nusOptionsFrom g = do
   right <- mapM simplifiedToNUS (rightMoves g)
   return (sort left, sort right)
 
--- Assumes the game given to it is simplified
+-- This is a prism
 simplifiedToNUS :: Game -> Maybe NumberUpStar
 simplifiedToNUS = nusOptionsFrom >=> optionsToNUS
 
@@ -168,9 +220,7 @@ instance Show NumberUpStar where
                        | otherwise = show n
 
 instance Show Game where
-  show g = string (simplifiedToNUS s)
-    where s = simplify g
-          string (Just nus) = show nus
-          string Nothing = "{ " ++ leftString ++ " | " ++ rightString ++ " }"
-          leftString = intercalate ", " (map show (leftMoves s))
-          rightString = intercalate ", " (map show (rightMoves s))
+  show (NUSGame nus) = show nus
+  show g = "{ " ++ leftString ++ " | " ++ rightString ++ " }"
+    where leftString = intercalate ", " (map show (leftMoves g))
+          rightString = intercalate ", " (map show (rightMoves g))
