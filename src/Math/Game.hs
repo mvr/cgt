@@ -224,3 +224,20 @@ instance Show Game where
   show g = "{ " ++ leftString ++ " | " ++ rightString ++ " }"
     where leftString = intercalate ", " (map show (leftMoves g))
           rightString = intercalate ", " (map show (rightMoves g))
+
+-- birthday :: Game -> Integer
+-- temperature :: Game -> Rational
+-- cool :: Game -> Rational -> Game
+-- freeze :: Game -> Game
+-- heat :: Game -> Game -> Game
+-- leftStop :: Game -> Rational
+-- rightStop :: Game -> Rational
+-- allSmall :: Game -> Bool
+-- atomicWeight :: Game -> Rational
+-- leftIncentives :: Game -> [Game]
+-- rightIncentives :: Game -> [Game]
+-- nortonMultiply :: Game -> Game -> Game
+-- conwayMultiply :: Game -> Game -> Game
+-- ordinalSum :: Game -> Game -> Game
+-- mean :: Game -> Rational
+-- thermograph :: Game -> Thermograph
