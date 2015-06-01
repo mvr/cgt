@@ -1,6 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Math.Game.Nimber
-       (Nimber)
+       (
+         Nimber(..)
+       )
   where
 
 import Data.Bits
@@ -56,7 +58,7 @@ instance Num Nimber where
           p0 = a0 * b0
           p1 = a1 * b1
 
-  fromInteger n = Nimber n
+  fromInteger = Nimber
   signum 0 = 0
   signum _ = 1
   abs = id

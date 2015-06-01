@@ -1,6 +1,7 @@
 module Math.Game
        (
-         Game, game, leftMoves, rightMoves,
+         Game(..), NumberUpStar (..),
+         game, leftMoves, rightMoves,
          star, up, down,
          (||),
        )
