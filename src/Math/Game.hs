@@ -4,6 +4,7 @@ module Math.Game
          game, leftMoves, rightMoves,
          star, up, down,
          (||),
+         nusToOptionsGame,
        )
   where
 
@@ -185,6 +186,10 @@ nusOptionsFrom g = do
 -- This is a prism
 simplifiedToNUS :: Game -> Maybe NumberUpStar
 simplifiedToNUS = nusOptionsFrom >=> optionsToNUS
+
+nusToOptionsGame :: NumberUpStar -> Game
+nusToOptionsGame nus = Game (leftMoves nusGame) (rightMoves nusGame)
+  where nusGame = NUSGame nus
 
 instance Show NumberUpStar where
   show (NUS 0 0 0) = "0"
