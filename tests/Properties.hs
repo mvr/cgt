@@ -23,6 +23,8 @@ instance Arbitrary NumberUpStar where
   arbitrary = NUS <$> ((%) <$> n <*> d) <*> choose (-5, 5) <*> arbitrary
     where n = arbitrary
           d = (2^) <$> choose (0::Int, 5)
+  shrink (NUS n u s) =  [NUS n' u' s' | (n', u', s') <- shrink (n, u, s)]
+
 
 prop_nusEquals nus = nusToOptionsGame nus == NUSGame nus
 
