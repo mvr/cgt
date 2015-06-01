@@ -71,36 +71,16 @@ instance Num Game where
 instance Fractional Game where
   fromRational r = NUSGame (NUS r 0 0)
 
-gteqZero, lteqZero :: Game -> Bool
-gteqZero = not . any lteqZero . rightMoves
-lteqZero = not . any gteqZero . leftMoves
-
-eqZero, gtZero, ltZero, fuzzyZero :: Game -> Bool
-eqZero g = gteqZero g && lteqZero g
-gtZero g = gteqZero g && not (lteqZero g)
-ltZero g = not (gteqZero g) && lteqZero g
-
-fuzzyZero g = not (gteqZero g) && not (lteqZero g)
-
 instance Eq Game where
   NUSGame g == NUSGame h = g == h
-  g == h = eqZero (g - h)
+  g == h = (g <= h) && (h <= g)
 
 instance Ord Game where
-  NUSGame g < NUSGame h = g < h
-  g < h = ltZero (g - h)
-
-  NUSGame g > NUSGame h = g > h
-  g > h = gtZero (g - h)
-
   NUSGame g <= NUSGame h = g <= h
-  g <= h = lteqZero (g - h)
-
-  NUSGame g >= NUSGame h = g >= h
-  g >= h = gteqZero (g - h)
+  g <= h = not (any (h <=) (leftMoves g)) && not (any (<= g) (rightMoves h))
 
 (||) :: Game -> Game -> Bool
-g || h = fuzzyZero (g - h)
+g || h = not (g <= h) && not (h <= g)
 
 unbeaten :: (a -> a -> Bool) -> [a] -> [a]
 unbeaten _ [] = []
