@@ -12,8 +12,19 @@ import Test.Framework.Providers.QuickCheck2
 import Math.Game
 import Math.Game.Nimber
 
+genGame :: Int -> Gen Game
+genGame n = do
+    t <- arbitrary
+    if t then
+      NUSGame <$> arbitrary
+    else do
+      lSize <- choose (0,n)
+      rSize <- choose (0,n)
+
+      game <$> vectorOf lSize (genGame (n-1)) <*> vectorOf rSize (genGame (n-1))
+
 instance Arbitrary Game where
-  arbitrary = Game <$> arbitrary <*> arbitrary
+  arbitrary = genGame 4
 
 instance Arbitrary Nimber where
   arbitrary = Nimber <$> pos
@@ -27,6 +38,9 @@ instance Arbitrary NumberUpStar where
 
 
 prop_nusEquals nus = nusToOptionsGame nus == NUSGame nus
+prop_nusLeq a b = a <= b ==> nusToOptionsGame a <= nusToOptionsGame b
+prop_nusLeqLeft a b = (NUSGame a) <= b ==> nusToOptionsGame a <= b
+prop_nusLeqRight a b = a <= (NUSGame b) ==> a <= nusToOptionsGame b
 
 main :: IO ()
 main = $defaultMainGenerator
