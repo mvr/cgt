@@ -32,7 +32,7 @@ leftMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i < 0 = []
 leftMoves (NUSGame (NUS r 0 0)) = [fromRational $ (numerator r - 1) % denominator r]
 leftMoves (NUSGame (NUS r 1 1)) = [NUSGame (NUS r 0 0), NUSGame (NUS r 0 1)]
 leftMoves (NUSGame (NUS r (-1) 1)) = [NUSGame (NUS r 0 0)]
-leftMoves (NUSGame (NUS r 0 (Nimber k))) = map (NUSGame . NUS r 0 . Nimber) [0..k-1]
+leftMoves (NUSGame (NUS r 0 k)) = map (NUSGame . NUS r 0 . Nimber) [0 .. unNimber k - 1]
 leftMoves (NUSGame (NUS n u s)) | u > 0 = [NUSGame (NUS n 0 0)]
 leftMoves (NUSGame (NUS n u s)) | u < 0 = [NUSGame (NUS n (u+1) (s+1))]
 
@@ -44,7 +44,7 @@ rightMoves (NUSGame (NUS i 0 0)) | denominator i == 1 && i < 0 = [fromInteger $ 
 rightMoves (NUSGame (NUS r 0 0)) = [fromRational $ (numerator r + 1) % denominator r]
 rightMoves (NUSGame (NUS r 1 1)) = [NUSGame (NUS r 0 0)]
 rightMoves (NUSGame (NUS r (-1) 1)) = [NUSGame (NUS r 0 0), NUSGame (NUS r 0 1)]
-rightMoves (NUSGame (NUS r 0 (Nimber k))) = map (NUSGame . NUS r 0 . Nimber) [0..k-1]
+rightMoves (NUSGame (NUS r 0 k)) = map (NUSGame . NUS r 0 . Nimber) [0 ..  unNimber k - 1]
 rightMoves (NUSGame (NUS n u s)) | u > 0 = [NUSGame (NUS n (u-1) (s-1))]
 rightMoves (NUSGame (NUS n u s)) | u < 0  = [NUSGame (NUS n 0 0)]
 
