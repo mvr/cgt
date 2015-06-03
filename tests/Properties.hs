@@ -37,10 +37,12 @@ instance Arbitrary NumberUpStar where
   shrink (NUS n u s) =  [NUS n' u' s' | (n', u', s') <- shrink (n, u, s)]
 
 
-prop_nusEquals nus = nusToOptionsGame nus == NUSGame nus
-prop_nusLeq a b = a <= b ==> nusToOptionsGame a <= nusToOptionsGame b
-prop_nusLeqLeft a b = (NUSGame a) <= b ==> nusToOptionsGame a <= b
-prop_nusLeqRight a b = a <= (NUSGame b) ==> a <= nusToOptionsGame b
+prop_nusEquals nus    = nusToOptionsGame nus == NUSGame nus
+prop_nusLeq a b       = a         <=         b ==> nusToOptionsGame a <= nusToOptionsGame b
+prop_nusLeqLeft a b   = NUSGame a <=         b ==> nusToOptionsGame a <= b
+prop_nusLeqRight a b  = a         <= NUSGame b ==>                  a <= nusToOptionsGame b
+
+prop_nusBirthday nus  = birthday (NUSGame nus) == birthday (nusToOptionsGame nus)
 
 main :: IO ()
 main = $defaultMainGenerator

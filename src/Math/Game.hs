@@ -4,6 +4,7 @@ module Math.Game
          game, leftMoves, rightMoves,
          star, up, down,
          (||),
+         birthday,
          nusToOptionsGame,
        )
   where
@@ -135,8 +136,16 @@ nusIsNumber :: NumberUpStar -> Bool
 nusIsNumber nus = upPart nus == 0 && nimberPart nus == 0
 
 isNumber :: Game -> Bool
-isNumber (Game _ _) = False
+isNumber (Game _ _) = False -- TODO
 isNumber (NUSGame nus) = nusIsNumber nus
+
+log2 :: Integer -> Integer
+log2 1 = 0
+log2 2 = 1
+log2 x = 1 + log2 (x `div` 2)
+
+denominatorExp :: Rational -> Integer
+denominatorExp = log2 . denominator
 
 optionsToNUS :: ([NumberUpStar], [NumberUpStar]) -> Maybe NumberUpStar
 -- Zero game
@@ -211,7 +220,17 @@ instance Show Game where
     where leftString = intercalate ", " (map show (leftMoves g))
           rightString = intercalate ", " (map show (rightMoves g))
 
--- birthday :: Game -> Integer
+birthday :: Game -> Integer
+birthday (NUSGame (NUS n u s)) = numberBirthday n + upStarBirthday u s
+  where numberBirthday n | denominator n == 1 = numerator n
+        numberBirthday n = 1 + truncate n + denominatorExp n
+        upStarBirthday 0 0 = 0
+        upStarBirthday u 0 = abs u + 1
+        upStarBirthday u s | odd u && s /= 1 = abs u + unNimber (s + 1)
+        upStarBirthday u s = abs u + unNimber s
+birthday (Game [] []) = 0
+birthday (Game l r) = 1 + maximum (map birthday (l ++ r))
+
 -- temperature :: Game -> Rational
 -- cool :: Game -> Rational -> Game
 -- freeze :: Game -> Game
