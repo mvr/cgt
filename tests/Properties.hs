@@ -16,7 +16,7 @@ genGame :: Int -> Gen Game
 genGame n = do
     t <- arbitrary
     if t then
-      NUSGame <$> arbitrary
+      nusGame <$> arbitrary
     else do
       lSize <- choose (0,n)
       rSize <- choose (0,n)
@@ -37,12 +37,12 @@ instance Arbitrary NumberUpStar where
   shrink (NUS n u s) =  [NUS n' u' s' | (n', u', s') <- shrink (n, u, s)]
 
 
-prop_nusEquals nus    = nusToOptionsGame nus == NUSGame nus
+prop_nusEquals nus    = nusToOptionsGame nus == nusGame nus
 prop_nusLeq a b       = a         <=         b ==> nusToOptionsGame a <= nusToOptionsGame b
-prop_nusLeqLeft a b   = NUSGame a <=         b ==> nusToOptionsGame a <= b
-prop_nusLeqRight a b  = a         <= NUSGame b ==>                  a <= nusToOptionsGame b
+prop_nusLeqLeft a b   = nusGame a <=         b ==> nusToOptionsGame a <= b
+prop_nusLeqRight a b  = a         <= nusGame b ==>                  a <= nusToOptionsGame b
 
-prop_nusBirthday nus  = birthday (NUSGame nus) == birthday (nusToOptionsGame nus)
+prop_nusBirthday nus  = birthday (nusGame nus) == birthday (nusToOptionsGame nus)
 
 main :: IO ()
 main = $defaultMainGenerator

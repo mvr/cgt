@@ -1,7 +1,7 @@
 module Math.Game
        (
-         Game(..), NumberUpStar (..),
-         game, leftMoves, rightMoves,
+         Game, NumberUpStar (..),
+         game, nusGame, leftMoves, rightMoves,
          star, up, down,
          (||),
          birthday,
@@ -24,6 +24,9 @@ game l r = let g = simplify (Game l r) in
            case simplifiedToNUS g of
              Just nus -> NUSGame nus
              Nothing  -> g
+
+nusGame :: NumberUpStar -> Game
+nusGame = NUSGame
 
 leftMoves :: Game -> [Game]
 leftMoves (Game l _) = l
