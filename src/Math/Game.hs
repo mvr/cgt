@@ -5,6 +5,7 @@ module Math.Game
          star, up, down,
          (||),
          birthday,
+         leftStop, rightStop,
          nusToOptionsGame,
        )
   where
@@ -233,6 +234,14 @@ birthday (NUSGame (NUS n u s)) = numberBirthday n + upStarBirthday u s
         upStarBirthday u s = abs u + unNimber s
 birthday (Game [] []) = 0
 birthday (Game l r) = 1 + maximum (map birthday (l ++ r))
+
+leftStop :: Game -> Rational
+leftStop (NUSGame (NUS n 0 0)) = n
+leftStop g = maximum $ map rightStop (leftMoves g)
+
+rightStop :: Game -> Rational
+rightStop (NUSGame (NUS n 0 0)) = n
+rightStop g = minimum $ map leftStop (rightMoves g)
 
 -- temperature :: Game -> Rational
 -- cool :: Game -> Rational -> Game
