@@ -6,6 +6,7 @@ module Math.Game
          (||),
          birthday,
          leftStop, rightStop,
+         allSmall,
          nusToOptionsGame,
        )
   where
@@ -243,13 +244,15 @@ rightStop :: Game -> Rational
 rightStop (NUSGame (NUS n 0 0)) = n
 rightStop g = minimum $ map leftStop (rightMoves g)
 
+allSmall :: Game -> Bool
+allSmall (NUSGame (NUS 0 _ _)) = True
+allSmall (NUSGame _) = False
+allSmall (Game l r) = all allSmall l && all allSmall r
+
 -- temperature :: Game -> Rational
 -- cool :: Game -> Rational -> Game
 -- freeze :: Game -> Game
 -- heat :: Game -> Game -> Game
--- leftStop :: Game -> Rational
--- rightStop :: Game -> Rational
--- allSmall :: Game -> Bool
 -- atomicWeight :: Game -> Rational
 -- leftIncentives :: Game -> [Game]
 -- rightIncentives :: Game -> [Game]
