@@ -79,6 +79,8 @@ instance Num Game where
 instance Fractional Game where
   fromRational r = NUSGame (NUS r 0 0)
 
+  (/) = undefined
+
 instance Eq Game where
   NUSGame g == NUSGame h = g == h
   g == h = (g <= h) && (h <= g)
