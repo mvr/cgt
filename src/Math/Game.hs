@@ -2,8 +2,9 @@ module Math.Game
        (
          Game, NumberUpStar (..),
          game, nusGame, leftMoves, rightMoves,
-         star, up, down,
          (||),
+         star, up, down,
+         tiny, miny,
          birthday,
          leftStop, rightStop,
          allSmall,
@@ -250,6 +251,12 @@ allSmall :: Game -> Bool
 allSmall (NUSGame (NUS 0 _ _)) = True
 allSmall (NUSGame _) = False
 allSmall (Game l r) = all allSmall l && all allSmall r
+
+tiny :: Game -> Game
+tiny g = game [0] [game [0] [negate g]]
+
+miny :: Game -> Game
+miny g = game [game [g] [0]] [0]
 
 -- temperature :: Game -> Rational
 -- cool :: Game -> Rational -> Game
